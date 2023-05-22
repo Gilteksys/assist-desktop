@@ -1,0 +1,50 @@
+import sys
+from PyQt5.QtCore import QUrl, QUrlQuery
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget
+from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest,QNetworkReply
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Exemplo de Janela com Botão")
+        self.setGeometry(100, 100, 400, 200)
+
+        main_widget = QWidget()
+        self.setCentralWidget(main_widget)
+
+        layout = QVBoxLayout(main_widget)
+
+        button = QPushButton("Criar Cliente")
+        button.clicked.connect(self.on_create_cliente_clicked)
+        layout.addWidget(button)
+
+        self.network_manager = QNetworkAccessManager(self)
+
+    def on_create_cliente_clicked(self):
+        url = QUrl("http://localhost:8000/contatos/cliente_create/")
+        request = QNetworkRequest(url)
+        request.setHeader(QNetworkRequest.ContentTypeHeader, "application/x-www-form-urlencoded")
+
+        query = QUrlQuery()
+        query.addQueryItem("nome", "John Doe")
+        query.addQueryItem("contato", "john@example.com")
+        data = query.toString().encode("utf-8")
+
+        reply = self.network_manager.post(request, data)
+        reply.finished.connect(self.on_request_finished)
+
+    def on_request_finished(self):
+        reply = self.sender()
+        if reply.error() == QNetworkReply.NoError:
+            print("Cliente criado com sucesso!")
+        else:
+            print("Erro ao criar cliente:", reply.errorString())
+
+        reply.deleteLater()
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())

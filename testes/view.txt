@@ -1,0 +1,29 @@
+from django.shortcuts import render
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Cliente
+
+def cliente_list(request):
+    clientes = Cliente.objects.all()
+    return render(request, 'cliente_list.html', {'clientes': clientes})
+
+def cliente_detail(request, cliente_id):
+    cliente = get_object_or_404(Cliente, id=cliente_id)
+    return render(request, 'cliente_detail.html', {'cliente': cliente})
+
+def cliente_create(request):
+    if request.method == 'POST':
+        nome = request.POST['nome']
+        contato = request.POST['contato']
+        Cliente.objects.create(nome=nome, contato=contato)
+        return redirect('cliente_list')
+    return render(request, 'cliente_create.html')
+
+def cliente_edit(request, cliente_id):
+    cliente = get_object_or_404(Cliente, id=cliente_id)
+    if request.method == 'POST':
+        cliente.nome = request.POST['nome']
+        cliente.contato = request.POST['contato']
+        cliente.save()
+        return redirect('cliente_detail', cliente_id=cliente_id)
+    return render(request, 'cliente_edit.html', {'cliente': cliente})
